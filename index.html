@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WEPRO Warehouse — Склад гастробара</title>
+  <meta name="description" content="Интерфейс складского учёта для менеджера по закупкам гастробара WEPRO: остатки, расход, дозаказ и статусы запасов.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Затемнение для мобильного меню -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <div class="app-container">
+    <!-- ======================================================================
+         БОКОВОЕ МЕНЮ (SIDEBAR)
+         ====================================================================== -->
+    <aside class="sidebar" id="sidebar" aria-label="Основная навигация">
+      <!-- Логотип WEPRO (полное лого logo.png) -->
+      <div class="sidebar-brand">
+        <img src="./logo.png" alt="WEPRO" class="brand-logo-img" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='flex';">
+        <div class="brand-fallback" id="brand-fallback" style="display: none;">
+          <div class="brand-fallback-icon">W</div>
+          <div class="brand-fallback-title">WEPRO</div>
+        </div>
+        <div class="brand-subtitle">Гастробар · Никольская</div>
+      </div>
+
+      <!-- Меню -->
+      <div class="nav-section">
+        <div class="nav-section-title">Меню</div>
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-btn" data-nav-target="dishes">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v2"/><path d="M4 18h16"/><path d="M4 18a8 8 0 0 1 16 0"/><circle cx="12" cy="4" r="1"/></svg>
+              </span>
+              <span>Блюда</span>
+              <span class="nav-count-muted">6</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-nav-target="categories">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+              </span>
+              <span>Категории</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Продажи -->
+      <div class="nav-section">
+        <div class="nav-section-title">Продажи</div>
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-btn" data-nav-target="orders">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-8"/><path d="M16 12h-8"/><path d="M10 16H8"/></svg>
+              </span>
+              <span>Заказы</span>
+              <span class="nav-count-muted">4</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-nav-target="clients">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              <span>Клиенты</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Закупки -->
+      <div class="nav-section">
+        <div class="nav-section-title">Закупки</div>
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-btn active" data-nav-target="warehouse">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+              </span>
+              <span>Склад</span>
+              <span class="nav-badge" id="sidebar-warehouse-badge">7</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-nav-target="suppliers">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+              </span>
+              <span>Поставщики</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-nav-target="reports">
+              <span class="nav-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+              </span>
+              <span>Отчёты</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Нижние виджеты сайдбара -->
+      <div class="sidebar-footer">
+        <div class="sidebar-inventory-card" id="sidebar-inventory-widget" title="Открыть инвентаризацию">
+          <div class="inventory-card-title">
+            <span>Инвентаризация</span>
+            <span style="color: var(--color-accent-lime);">📋</span>
+          </div>
+          <div class="inventory-card-desc">Последняя — 27 июля. Следующая через 4 дня.</div>
+        </div>
+
+        <div class="user-profile">
+          <div class="user-avatar" aria-hidden="true">ИК</div>
+          <div>
+            <div class="user-name">Ирина Ковалева</div>
+            <div class="user-role">Закупки</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         ОСНОВНАЯ ОБЛАСТЬ (MAIN WRAPPER)
+         ====================================================================== -->
+    <div class="main-wrapper">
+      <!-- Мобильная верхняя панель -->
+      <div class="mobile-topbar">
+        <div class="mobile-brand-wrap">
+          <button type="button" class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Открыть меню">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+          <img src="./logo.png" alt="WEPRO" class="mobile-logo-img">
+          <span class="mobile-section-tag" id="mobile-section-tag">· Склад</span>
+        </div>
+
+        <div class="mobile-topbar-actions">
+          <button type="button" class="btn-primary" id="btn-mobile-order" style="padding: 6px 12px; font-size: 12px;">
+            + Заказ
+          </button>
+        </div>
+      </div>
+
+      <!-- Контентная область -->
+      <main class="main-content">
+        <!-- ==================================================================
+             РАЗДЕЛ: СКЛАД (ГЛАВНАЯ СТРАНИЦА И ТАБЛИЦА ИЗ МАКЕТА)
+             ================================================================== -->
+        <section class="view-section active" id="section-warehouse" aria-label="Склад">
+          <!-- Верхняя шапка -->
+          <header class="top-header">
+            <div>
+              <nav class="breadcrumbs" aria-label="Хлебные крошки">
+                <span>Закупки</span>
+                <span aria-hidden="true">/</span>
+                <span class="current">Склад</span>
+              </nav>
+              <h1 class="page-title">Склад</h1>
+              <p class="page-meta">42 позиции · данные обновлены сегодня в 14:20</p>
+            </div>
+
+            <div class="header-actions">
+              <button type="button" class="btn-secondary" id="btn-inventory">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                Инвентаризация
+              </button>
+              <button type="button" class="btn-secondary" id="btn-export">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Экспорт
+              </button>
+              <button type="button" class="btn-primary" id="btn-create-order">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                Создать заказ
+              </button>
+            </div>
+          </header>
+
+          <!-- Карточки показателей (KPI) -->
+          <section class="kpi-grid" aria-label="Сводные показатели склада">
+            <article class="kpi-card">
+              <span class="kpi-label">Стоимость запасов</span>
+              <div class="kpi-value tabular-nums" id="kpi-total-val">486 200 ₽</div>
+              <span class="kpi-subtext tabular-nums text-success">
+                <span>↓ -4,1% к июню</span>
+              </span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Требуют дозаказа</span>
+              <div class="kpi-value tabular-nums">
+                <span id="kpi-reorder-count">7</span> <small>из 42</small>
+              </div>
+              <div class="kpi-subtext">
+                <span class="kpi-dot-danger" aria-hidden="true"></span>
+                <span class="text-danger" id="kpi-danger-count">2 критично</span>
+                <span style="color: var(--color-text-muted);" id="kpi-warn-count">5 заканчиваются</span>
+              </div>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Закупка за июль</span>
+              <div class="kpi-value tabular-nums" id="kpi-july-purchases">1 148 700 ₽</div>
+              <span class="kpi-subtext tabular-nums text-success">28,4% от выручки</span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Списания за июль</span>
+              <div class="kpi-value tabular-nums" id="kpi-july-writeoffs">18 400 ₽</div>
+              <span class="kpi-subtext tabular-nums text-danger">+2 100 ₽ к июню</span>
+            </article>
+          </section>
+
+          <!-- Панель управления и фильтров -->
+          <section class="controls-bar" aria-label="Панель фильтров склада">
+            <div class="controls-left">
+              <div class="filter-tabs" role="tablist">
+                <button type="button" class="tab-btn active" data-filter="all" role="tab">Все 42</button>
+                <button type="button" class="tab-btn" data-filter="warn" role="tab" id="tab-count-warn">Заканчиваются 5</button>
+                <button type="button" class="tab-btn" data-filter="danger" role="tab" id="tab-count-danger">Критично 2</button>
+              </div>
+
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+                <input type="search" class="search-input" id="search-input" placeholder="Поиск по позиции или поставщику">
+              </div>
+
+              <div class="dropdown-filter">
+                <select class="filter-select" id="supplier-filter">
+                  <option value="">Поставщик</option>
+                  <option value="Тесоро">Тесоро</option>
+                  <option value="Норд Фиш">Норд Фиш</option>
+                  <option value="Овощная база">Овощная база</option>
+                  <option value="Мясной дом">Мясной дом</option>
+                  <option value="Гарантия Плюс">Гарантия Плюс</option>
+                  <option value="Своё производство">Своё производство</option>
+                </select>
+                <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+
+              <div class="dropdown-filter">
+                <select class="filter-select" id="category-filter">
+                  <option value="">Категория</option>
+                  <option value="ingredients">Ингредиенты и продукты</option>
+                  <option value="prep">Полуфабрикаты собственного производства</option>
+                </select>
+                <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <div class="controls-right">
+              <button type="button" class="sort-indicator" id="sort-toggle-btn">
+                <span>Сортировка:</span>
+                <strong>по запасу дней</strong>
+                <span id="sort-arrow" aria-hidden="true">↑</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               НАСТОЯЩАЯ СЕМАНТИЧЕСКАЯ HTML-ТАБЛИЦА (8 КОЛОНОК)
+               ================================================================ -->
+          <section class="table-card">
+            <div class="table-scroll-container">
+              <table class="warehouse-table" id="warehouse-table">
+                <thead>
+                  <tr>
+                    <th scope="col" class="col-pos">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox" id="check-all" title="Выбрать все">
+                        <span>Позиция</span>
+                      </div>
+                    </th>
+                    <th scope="col" class="col-stock">Остаток</th>
+                    <th scope="col" class="col-days">Хватит на ↑</th>
+                    <th scope="col" class="col-usage">Расход / мес</th>
+                    <th scope="col" class="col-order">Дозаказать</th>
+                    <th scope="col" class="col-price">Цена</th>
+                    <th scope="col" class="col-value">На складе</th>
+                    <th scope="col" class="col-status">Статус</th>
+                  </tr>
+                </thead>
+
+                <!-- ГРУППА 1: Ингредиенты и продукты (colspan="8") -->
+                <tbody id="tbody-ingredients">
+                  <tr class="table-group-row">
+                    <th colspan="8" scope="colgroup">
+                      <div class="group-header-inner">
+                        <div class="group-title-wrap">
+                          <span class="group-title">Ингредиенты и продукты</span>
+                          <span class="group-count" id="count-group-ingredients">6 поз.</span>
+                        </div>
+                        <span class="group-total tabular-nums" id="sum-group-ingredients">на складе 109 061 ₽</span>
+                      </div>
+                    </th>
+                  </tr>
+
+                  <!-- 1. Страчателла -->
+                  <tr class="item-row" data-name="Страчателла" data-category="ingredients" data-supplier="Тесоро" data-status="danger" data-days="2.3" data-price="1290" data-remainder="2.1" data-unit="кг">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🧀</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Страчателла</div>
+                          <div class="item-subtext">Тесоро · кг · срок 5 дн.</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill danger" style="width: 15%;"></span></span>
+                        <span class="stock-amount tabular-nums">2,1 кг</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-danger tabular-nums">2,3 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">27,4 кг</div>
+                      <div class="usage-secondary tabular-nums">35 346 ₽</div>
+                    </td>
+                    <td class="cell-order">
+                      <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn btn-dec">−</button>
+                        <span class="stepper-val tabular-nums" data-unit="кг">8 кг</span>
+                        <button type="button" class="stepper-btn btn-inc">+</button>
+                      </div>
+                    </td>
+                    <td class="cell-price tabular-nums">1 290 ₽</td>
+                    <td class="cell-value tabular-nums">2 709 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--danger">Критично</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 2. Лосось с/м, филе -->
+                  <tr class="item-row" data-name="Лосось с/м, филе" data-category="ingredients" data-supplier="Норд Фиш" data-status="danger" data-days="2.6" data-price="1450" data-remainder="8.4" data-unit="кг">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🐟</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Лосось с/м, филе</div>
+                          <div class="item-subtext">Норд Фиш · кг · охл. 0..+2</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill danger" style="width: 18%;"></span></span>
+                        <span class="stock-amount tabular-nums">8,4 кг</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-danger tabular-nums">2,6 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">96,5 кг</div>
+                      <div class="usage-secondary tabular-nums">139 925 ₽</div>
+                    </td>
+                    <td class="cell-order">
+                      <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn btn-dec">−</button>
+                        <span class="stepper-val tabular-nums" data-unit="кг">24 кг</span>
+                        <button type="button" class="stepper-btn btn-inc">+</button>
+                      </div>
+                    </td>
+                    <td class="cell-price tabular-nums">1 450 ₽</td>
+                    <td class="cell-value tabular-nums">12 180 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--danger">Критично</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 3. Томаты черри на ветке -->
+                  <tr class="item-row" data-name="Томаты черри на ветке" data-category="ingredients" data-supplier="Овощная база" data-status="warn" data-days="2.8" data-price="420" data-remainder="5.8" data-unit="кг">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🍅</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Томаты черри на ветке</div>
+                          <div class="item-subtext">Овощная база · 12 кг</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill warn" style="width: 25%;"></span></span>
+                        <span class="stock-amount tabular-nums">5,8 кг</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-warn tabular-nums">2,8 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">61,3 кг</div>
+                      <div class="usage-secondary tabular-nums">25 746 ₽</div>
+                    </td>
+                    <td class="cell-order">
+                      <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn btn-dec">−</button>
+                        <span class="stepper-val tabular-nums" data-unit="кг">12 кг</span>
+                        <button type="button" class="stepper-btn btn-inc">+</button>
+                      </div>
+                    </td>
+                    <td class="cell-price tabular-nums">420 ₽</td>
+                    <td class="cell-value tabular-nums">2 436 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--warn">Заканчивается</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 4. Рибай, зачищенный -->
+                  <tr class="item-row" data-name="Рибай, зачищенный" data-category="ingredients" data-supplier="Мясной дом" data-status="ok" data-days="8.7" data-price="2180" data-remainder="21.6" data-unit="кг">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🥩</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Рибай, зачищенный</div>
+                          <div class="item-subtext">Мясной дом · кг · вакуум</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill ok" style="width: 60%;"></span></span>
+                        <span class="stock-amount tabular-nums">21,6 кг</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-normal tabular-nums">8,7 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">74,2 кг</div>
+                      <div class="usage-secondary tabular-nums">161 756 ₽</div>
+                    </td>
+                    <td class="cell-order"><span class="empty-dash">—</span></td>
+                    <td class="cell-price tabular-nums">2 180 ₽</td>
+                    <td class="cell-value tabular-nums">47 088 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--ok">В норме</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 5. Мука Манитоба W380 -->
+                  <tr class="item-row" data-name="Мука Манитоба W380" data-category="ingredients" data-supplier="Гарантия Плюс" data-status="ok" data-days="16.0" data-price="118" data-remainder="96" data-unit="кг">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🌾</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Мука Манитоба W380</div>
+                          <div class="item-subtext">Гарантия Плюс · кг</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill ok" style="width: 75%;"></span></span>
+                        <span class="stock-amount tabular-nums">96 кг</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-normal tabular-nums">16 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">184 кг</div>
+                      <div class="usage-secondary tabular-nums">21 712 ₽</div>
+                    </td>
+                    <td class="cell-order"><span class="empty-dash">—</span></td>
+                    <td class="cell-price tabular-nums">118 ₽</td>
+                    <td class="cell-value tabular-nums">11 328 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--ok">В норме</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 6. Масло оливковое EV -->
+                  <tr class="item-row" data-name="Масло оливковое EV" data-category="ingredients" data-supplier="Тесоро" data-status="ok" data-days="21.0" data-price="980" data-remainder="34" data-unit="л">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🫒</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Масло оливковое EV</div>
+                          <div class="item-subtext">Тесоро · л · 5л канистра</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill ok" style="width: 80%;"></span></span>
+                        <span class="stock-amount tabular-nums">34 л</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-normal tabular-nums">21 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">48 л</div>
+                      <div class="usage-secondary tabular-nums">47 040 ₽</div>
+                    </td>
+                    <td class="cell-order"><span class="empty-dash">—</span></td>
+                    <td class="cell-price tabular-nums">980 ₽</td>
+                    <td class="cell-value tabular-nums">33 320 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--ok">В норме</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+
+                <!-- ГРУППА 2: Полуфабрикаты собственного производства (colspan="8") -->
+                <tbody id="tbody-prep">
+                  <tr class="table-group-row">
+                    <th colspan="8" scope="colgroup">
+                      <div class="group-header-inner">
+                        <div class="group-title-wrap">
+                          <span class="group-title">Полуфабрикаты собственного производства</span>
+                          <span class="group-count" id="count-group-prep">4 поз.</span>
+                        </div>
+                        <span class="group-total tabular-nums" id="sum-group-prep">на складе 11 062 ₽</span>
+                      </div>
+                    </th>
+                  </tr>
+
+                  <!-- 7. Тесто для пиццы, шар 280 г -->
+                  <tr class="item-row" data-name="Тесто для пиццы, шар 280 г" data-category="prep" data-supplier="Своё производство" data-status="warn" data-days="1.0" data-price="46" data-remainder="62" data-unit="шт">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🍕</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Тесто для пиццы, шар 280 г</div>
+                          <div class="item-subtext">Своё производство · шт · 48 ч</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill warn" style="width: 20%;"></span></span>
+                        <span class="stock-amount tabular-nums">62 шт</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-danger tabular-nums">1,0 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">1 840 шт</div>
+                      <div class="usage-secondary tabular-nums">84 640 ₽</div>
+                    </td>
+                    <td class="cell-order">
+                      <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn btn-dec">−</button>
+                        <span class="stepper-val tabular-nums" data-unit="шт">180 шт</span>
+                        <button type="button" class="stepper-btn btn-inc">+</button>
+                      </div>
+                    </td>
+                    <td class="cell-price tabular-nums">46 ₽</td>
+                    <td class="cell-value tabular-nums">2 852 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--warn">Заканчивается</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 8. Тальятелле свежая -->
+                  <tr class="item-row" data-name="Тальятелле свежая" data-category="prep" data-supplier="Своё производство" data-status="danger" data-days="2.4" data-price="520" data-remainder="3.4" data-unit="кг">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🍝</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Тальятелле свежая</div>
+                          <div class="item-subtext">Своё производство · кг · 4 дн.</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill danger" style="width: 16%;"></span></span>
+                        <span class="stock-amount tabular-nums">3,4 кг</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-danger tabular-nums">2,4 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">42,6 кг</div>
+                      <div class="usage-secondary tabular-nums">22 152 ₽</div>
+                    </td>
+                    <td class="cell-order">
+                      <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn btn-dec">−</button>
+                        <span class="stepper-val tabular-nums" data-unit="кг">10 кг</span>
+                        <button type="button" class="stepper-btn btn-inc">+</button>
+                      </div>
+                    </td>
+                    <td class="cell-price tabular-nums">520 ₽</td>
+                    <td class="cell-value tabular-nums">1 768 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--danger">Критично</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 9. Бульон даси -->
+                  <tr class="item-row" data-name="Бульон даси" data-category="prep" data-supplier="Своё производство" data-status="ok" data-days="3.6" data-price="340" data-remainder="11.5" data-unit="л">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🥣</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Бульон даси</div>
+                          <div class="item-subtext">Своё производство · л · 3 дн.</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill ok" style="width: 45%;"></span></span>
+                        <span class="stock-amount tabular-nums">11,5 л</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-normal tabular-nums">3,6 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">96 л</div>
+                      <div class="usage-secondary tabular-nums">32 640 ₽</div>
+                    </td>
+                    <td class="cell-order"><span class="empty-dash">—</span></td>
+                    <td class="cell-price tabular-nums">340 ₽</td>
+                    <td class="cell-value tabular-nums">3 910 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--ok">В норме</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- 10. Соус понзу -->
+                  <tr class="item-row" data-name="Соус понзу" data-category="prep" data-supplier="Своё производство" data-status="warn" data-days="5.5" data-price="610" data-remainder="4.2" data-unit="л">
+                    <td class="cell-pos" scope="row">
+                      <div class="item-meta-wrap">
+                        <input type="checkbox" class="custom-checkbox item-checkbox">
+                        <div class="item-icon-box">🥢</div>
+                        <div class="item-text-wrap">
+                          <div class="item-name">Соус понзу</div>
+                          <div class="item-subtext">Своё производство · л · 7 дн.</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-stock">
+                      <div class="stock-value-wrap">
+                        <span class="stock-bar-indicator"><span class="stock-bar-fill warn" style="width: 25%;"></span></span>
+                        <span class="stock-amount tabular-nums">4,2 л</span>
+                      </div>
+                    </td>
+                    <td class="cell-days text-warn tabular-nums">5,5 дн</td>
+                    <td class="cell-usage">
+                      <div class="usage-primary tabular-nums">22,8 л</div>
+                      <div class="usage-secondary tabular-nums">13 908 ₽</div>
+                    </td>
+                    <td class="cell-order">
+                      <div class="stepper-wrap">
+                        <button type="button" class="stepper-btn btn-dec">−</button>
+                        <span class="stepper-val tabular-nums" data-unit="л">6 л</span>
+                        <button type="button" class="stepper-btn btn-inc">+</button>
+                      </div>
+                    </td>
+                    <td class="cell-price tabular-nums">610 ₽</td>
+                    <td class="cell-value tabular-nums">2 562 ₽</td>
+                    <td class="cell-status">
+                      <div class="status-cell-wrap">
+                        <span class="badge badge--warn">Заканчивается</span>
+                        <button type="button" class="row-action-btn" title="Действия">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Подвал таблицы -->
+            <footer class="table-footer">
+              <div class="table-footer-info" id="pagination-info">Показано 10 из 42 позиций</div>
+              <nav class="pagination-wrap" aria-label="Пагинация">
+                <button type="button" class="page-btn" disabled>Назад</button>
+                <button type="button" class="page-btn active">1</button>
+                <button type="button" class="page-btn">2</button>
+                <button type="button" class="page-btn">3</button>
+                <button type="button" class="page-btn">Вперёд</button>
+              </nav>
+            </footer>
+          </section>
+        </section>
+
+        <!-- ==================================================================
+             РАЗДЕЛ: БЛЮДА (КУЛИНАРНОЕ МЕНЮ И ТЕХКАРТЫ)
+             ================================================================== -->
+        <section class="view-section" id="section-dishes" aria-label="Блюда">
+          <header class="top-header">
+            <div>
+              <nav class="breadcrumbs" aria-label="Хлебные крошки">
+                <span>Меню</span>
+                <span aria-hidden="true">/</span>
+                <span class="current">Блюда гастробара</span>
+              </nav>
+              <h1 class="page-title">Меню кухни</h1>
+              <p class="page-meta">Связка технологических карт с остатками склада и себестоимостью</p>
+            </div>
+            <div class="header-actions">
+              <button type="button" class="btn-primary" id="btn-add-dish">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                Добавить блюдо
+              </button>
+            </div>
+          </header>
+
+          <!-- Сводные показатели раздела Блюда -->
+          <section class="kpi-grid">
+            <article class="kpi-card">
+              <span class="kpi-label">Всего позиций в меню</span>
+              <div class="kpi-value tabular-nums">18 <small>блюд</small></div>
+              <span class="kpi-subtext text-success">✓ 15 доступны к заказу</span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Статус доступности кухни</span>
+              <div class="kpi-value tabular-nums" style="font-size: 20px;">
+                <span class="text-danger" id="kpi-dish-stop-count">2 в стоп-листе</span>
+              </div>
+              <span class="kpi-subtext text-danger">● Нехватка лосося на складе</span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Средняя маржинальность</span>
+              <div class="kpi-value tabular-nums text-success">74,2%</div>
+              <span class="kpi-subtext">Food cost кухни: 25,8%</span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Топ продаж за июль</span>
+              <div class="kpi-value" style="font-size: 18px;">Стейк Рибай</div>
+              <span class="kpi-subtext tabular-nums">142 порции · 489 900 ₽</span>
+            </article>
+          </section>
+
+          <!-- Сетка блюд -->
+          <div class="cards-grid">
+            <!-- Блюдо 1 -->
+            <article class="dish-card" data-dish-id="pizza">
+              <div>
+                <div class="dish-card-top">
+                  <div class="dish-icon-wrap dish-icon--pizza" title="Пицца из дровяной печи">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="M12 2v10l8.66 5"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="13" cy="16" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/></svg>
+                  </div>
+                  <div class="dish-meta-header">
+                    <span class="badge badge--warn dish-status-badge">Мало ингредиентов</span>
+                    <div class="dish-price-tag">790 ₽</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <h3 class="dish-title">Пицца со страчателлой и томатами</h3>
+                  <div class="dish-category-weight">
+                    <span>Пицца из дровяной печи</span>
+                    <span>·</span>
+                    <span>420 г</span>
+                  </div>
+                  <p class="dish-description">
+                    Хрустящее тесто на живой закваске, сливочная страчателла, сладкие томаты черри, свежий зелёный базилик и оливковое масло первого отжима.
+                  </p>
+                </div>
+
+                <!-- Остатки ингредиентов на складе -->
+                <div class="dish-warehouse-box" style="margin-top: 12px;">
+                  <div class="dish-warehouse-title">
+                    <span>Складские остатки</span>
+                    <span style="color: var(--color-warning);">Заканчивается</span>
+                  </div>
+                  <div class="ingredient-chips-list">
+                    <span class="ingredient-chip"><span class="ingredient-dot danger"></span>Страчателла: 2,1 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot warn"></span>Томаты черри: 5,8 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Тесто шар: 62 шт</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Масло EV: 34 л</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dish-finance-strip">
+                  <div class="dish-finance-item">
+                    <span class="dish-finance-label">Себестоимость</span>
+                    <span class="dish-finance-val">215 ₽</span>
+                  </div>
+                  <div class="dish-finance-item" style="text-align: right;">
+                    <span class="dish-finance-label">Маржинальность</span>
+                    <span class="dish-finance-val text-success">72.8%</span>
+                  </div>
+                </div>
+                <div class="dish-margin-bar"><div class="dish-margin-fill" style="width: 72.8%;"></div></div>
+
+                <div class="dish-actions">
+                  <button type="button" class="btn-secondary btn-open-recipe" data-recipe="pizza">Техкарта</button>
+                  <button type="button" class="btn-secondary btn-toggle-stop">В стоп-лист</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Блюдо 2 -->
+            <article class="dish-card" data-dish-id="steak">
+              <div>
+                <div class="dish-card-top">
+                  <div class="dish-icon-wrap dish-icon--meat" title="Мясо на гриле">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  </div>
+                  <div class="dish-meta-header">
+                    <span class="badge badge--ok dish-status-badge">В наличии</span>
+                    <div class="dish-price-tag">3 450 ₽</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <h3 class="dish-title">Стейк Рибай с перечным соусом</h3>
+                  <div class="dish-category-weight">
+                    <span>Мясо и гриль</span>
+                    <span>·</span>
+                    <span>350 г</span>
+                  </div>
+                  <p class="dish-description">
+                    Премиальная мраморная говядина зернового откорма 200 дней, обжаренная на открытом огне, соус демиглас на бульоне даси, морская соль флёр-де-сель.
+                  </p>
+                </div>
+
+                <!-- Остатки ингредиентов на складе -->
+                <div class="dish-warehouse-box" style="margin-top: 12px;">
+                  <div class="dish-warehouse-title">
+                    <span>Складские остатки</span>
+                    <span style="color: var(--color-success);">Запас в норме</span>
+                  </div>
+                  <div class="ingredient-chips-list">
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Рибай: 21,6 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Бульон даси: 11,5 л</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Масло EV: 34 л</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dish-finance-strip">
+                  <div class="dish-finance-item">
+                    <span class="dish-finance-label">Себестоимость</span>
+                    <span class="dish-finance-val">980 ₽</span>
+                  </div>
+                  <div class="dish-finance-item" style="text-align: right;">
+                    <span class="dish-finance-label">Маржинальность</span>
+                    <span class="dish-finance-val text-success">71.6%</span>
+                  </div>
+                </div>
+                <div class="dish-margin-bar"><div class="dish-margin-fill" style="width: 71.6%;"></div></div>
+
+                <div class="dish-actions">
+                  <button type="button" class="btn-secondary btn-open-recipe" data-recipe="steak">Техкарта</button>
+                  <button type="button" class="btn-secondary btn-toggle-stop">В стоп-лист</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Блюдо 3 -->
+            <article class="dish-card dish-stopped" data-dish-id="tagliatelle">
+              <div>
+                <div class="dish-card-top">
+                  <div class="dish-icon-wrap dish-icon--fish" title="Свежая рыба и паста">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12c.94-2.07 2.94-3.5 5.5-3.5s4.56 1.43 5.5 3.5c-.94 2.07-2.94 3.5-5.5 3.5s-4.56-1.43-5.5-3.5Z"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/></svg>
+                  </div>
+                  <div class="dish-meta-header">
+                    <span class="badge badge--danger dish-status-badge">Стоп-лист</span>
+                    <div class="dish-price-tag">890 ₽</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <h3 class="dish-title">Тальятелле со свежим лососем</h3>
+                  <div class="dish-category-weight">
+                    <span>Свежая паста</span>
+                    <span>·</span>
+                    <span>310 г</span>
+                  </div>
+                  <p class="dish-description">
+                    Домашняя яичная паста собственного производства, ломтики охлаждённого лосося слабой соли, соус понзу, сливочная эмульсия и каперсы.
+                  </p>
+                </div>
+
+                <!-- Остатки ингредиентов на складе -->
+                <div class="dish-warehouse-box" style="margin-top: 12px;">
+                  <div class="dish-warehouse-title">
+                    <span>Складские остатки</span>
+                    <span style="color: var(--color-danger);">Критический дефицит</span>
+                  </div>
+                  <div class="ingredient-chips-list">
+                    <span class="ingredient-chip"><span class="ingredient-dot danger"></span>Тальятелле: 3,4 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot danger"></span>Лосось: 8,4 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot warn"></span>Соус понзу: 4,2 л</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dish-finance-strip">
+                  <div class="dish-finance-item">
+                    <span class="dish-finance-label">Себестоимость</span>
+                    <span class="dish-finance-val">260 ₽</span>
+                  </div>
+                  <div class="dish-finance-item" style="text-align: right;">
+                    <span class="dish-finance-label">Маржинальность</span>
+                    <span class="dish-finance-val text-success">70.8%</span>
+                  </div>
+                </div>
+                <div class="dish-margin-bar"><div class="dish-margin-fill" style="width: 70.8%;"></div></div>
+
+                <div class="dish-actions">
+                  <button type="button" class="btn-secondary btn-open-recipe" data-recipe="tagliatelle">Техкарта</button>
+                  <button type="button" class="btn-secondary btn-toggle-stop">Снять со стоп-листа</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Блюдо 4 -->
+            <article class="dish-card dish-stopped" data-dish-id="tartar">
+              <div>
+                <div class="dish-card-top">
+                  <div class="dish-icon-wrap dish-icon--fish" title="Холодные закуски">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z"/><path d="m9 12 2 2 4-4"/></svg>
+                  </div>
+                  <div class="dish-meta-header">
+                    <span class="badge badge--danger dish-status-badge">Стоп-лист</span>
+                    <div class="dish-price-tag">760 ₽</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <h3 class="dish-title">Тартар из лосося с понзу</h3>
+                  <div class="dish-category-weight">
+                    <span>Холодные закуски</span>
+                    <span>·</span>
+                    <span>180 г</span>
+                  </div>
+                  <p class="dish-description">
+                    Рубленый охлаждённый лосось, цитрусовая заправка на соусе понзу, хрустящий шалот, каперсы, микрозелень и чипсы из тапиоки.
+                  </p>
+                </div>
+
+                <!-- Остатки ингредиентов на складе -->
+                <div class="dish-warehouse-box" style="margin-top: 12px;">
+                  <div class="dish-warehouse-title">
+                    <span>Складские остатки</span>
+                    <span style="color: var(--color-danger);">Критично</span>
+                  </div>
+                  <div class="ingredient-chips-list">
+                    <span class="ingredient-chip"><span class="ingredient-dot danger"></span>Лосось филе: 8,4 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot warn"></span>Соус понзу: 4,2 л</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Масло EV: 34 л</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dish-finance-strip">
+                  <div class="dish-finance-item">
+                    <span class="dish-finance-label">Себестоимость</span>
+                    <span class="dish-finance-val">195 ₽</span>
+                  </div>
+                  <div class="dish-finance-item" style="text-align: right;">
+                    <span class="dish-finance-label">Маржинальность</span>
+                    <span class="dish-finance-val text-success">74.3%</span>
+                  </div>
+                </div>
+                <div class="dish-margin-bar"><div class="dish-margin-fill" style="width: 74.3%;"></div></div>
+
+                <div class="dish-actions">
+                  <button type="button" class="btn-secondary btn-open-recipe" data-recipe="tartar">Техкарта</button>
+                  <button type="button" class="btn-secondary btn-toggle-stop">Снять со стоп-листа</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Блюдо 5 -->
+            <article class="dish-card" data-dish-id="focaccia">
+              <div>
+                <div class="dish-card-top">
+                  <div class="dish-icon-wrap dish-icon--salad" title="Выпечка и хлеб">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 3 4 7 4 7s4-4 4-7a4 4 0 0 0-4-4Z"/><path d="M12 13v9"/><path d="M5 22h14"/></svg>
+                  </div>
+                  <div class="dish-meta-header">
+                    <span class="badge badge--ok dish-status-badge">В наличии</span>
+                    <div class="dish-price-tag">320 ₽</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <h3 class="dish-title">Фокачча домашняя с розмарином</h3>
+                  <div class="dish-category-weight">
+                    <span>Выпечка и хлеб</span>
+                    <span>·</span>
+                    <span>250 г</span>
+                  </div>
+                  <p class="dish-description">
+                    Традиционная лигурийская лепёшка на сильной муке Манитоба W380, крупная морская соль, свежий горный розмарин и греческое оливковое масло.
+                  </p>
+                </div>
+
+                <!-- Остатки ингредиентов на складе -->
+                <div class="dish-warehouse-box" style="margin-top: 12px;">
+                  <div class="dish-warehouse-title">
+                    <span>Складские остатки</span>
+                    <span style="color: var(--color-success);">Запас в норме</span>
+                  </div>
+                  <div class="ingredient-chips-list">
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Мука Манитоба: 96 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Масло EV: 34 л</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dish-finance-strip">
+                  <div class="dish-finance-item">
+                    <span class="dish-finance-label">Себестоимость</span>
+                    <span class="dish-finance-val">45 ₽</span>
+                  </div>
+                  <div class="dish-finance-item" style="text-align: right;">
+                    <span class="dish-finance-label">Маржинальность</span>
+                    <span class="dish-finance-val text-success">85.9%</span>
+                  </div>
+                </div>
+                <div class="dish-margin-bar"><div class="dish-margin-fill" style="width: 85.9%;"></div></div>
+
+                <div class="dish-actions">
+                  <button type="button" class="btn-secondary btn-open-recipe" data-recipe="focaccia">Техкарта</button>
+                  <button type="button" class="btn-secondary btn-toggle-stop">В стоп-лист</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- Блюдо 6 -->
+            <article class="dish-card" data-dish-id="ramen">
+              <div>
+                <div class="dish-card-top">
+                  <div class="dish-icon-wrap dish-icon--soup" title="Горячие супы">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 8V4"/><path d="M12 8V2"/><path d="M17 8V4"/></svg>
+                  </div>
+                  <div class="dish-meta-header">
+                    <span class="badge badge--ok dish-status-badge">В наличии</span>
+                    <div class="dish-price-tag">850 ₽</div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <h3 class="dish-title">Рамен на бульоне даси с рибаем</h3>
+                  <div class="dish-category-weight">
+                    <span>Горячие супы</span>
+                    <span>·</span>
+                    <span>450 г</span>
+                  </div>
+                  <p class="dish-description">
+                    Насыщенный бульон даси собственного производства, тонкие слайсы мраморного рибая, пшеничная лапша, маринованное яйцо адзитама и лук порей.
+                  </p>
+                </div>
+
+                <!-- Остатки ингредиентов на складе -->
+                <div class="dish-warehouse-box" style="margin-top: 12px;">
+                  <div class="dish-warehouse-title">
+                    <span>Складские остатки</span>
+                    <span style="color: var(--color-success);">Запас в норме</span>
+                  </div>
+                  <div class="ingredient-chips-list">
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Бульон даси: 11,5 л</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Рибай: 21,6 кг</span>
+                    <span class="ingredient-chip"><span class="ingredient-dot ok"></span>Мука: 96 кг</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="dish-finance-strip">
+                  <div class="dish-finance-item">
+                    <span class="dish-finance-label">Себестоимость</span>
+                    <span class="dish-finance-val">220 ₽</span>
+                  </div>
+                  <div class="dish-finance-item" style="text-align: right;">
+                    <span class="dish-finance-label">Маржинальность</span>
+                    <span class="dish-finance-val text-success">74.1%</span>
+                  </div>
+                </div>
+                <div class="dish-margin-bar"><div class="dish-margin-fill" style="width: 74.1%;"></div></div>
+
+                <div class="dish-actions">
+                  <button type="button" class="btn-secondary btn-open-recipe" data-recipe="ramen">Техкарта</button>
+                  <button type="button" class="btn-secondary btn-toggle-stop">В стоп-лист</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             РАЗДЕЛ: КАТЕГОРИИ
+             ================================================================== -->
+        <section class="view-section" id="section-categories" aria-label="Категории">
+          <header class="top-header">
+            <div>
+              <h1 class="page-title">Категории склада</h1>
+              <p class="page-meta">Структура хранения и распределение позиций</p>
+            </div>
+          </header>
+
+          <div class="cards-grid">
+            <div class="info-card" style="cursor: pointer;" onclick="document.querySelector('[data-nav-target=warehouse]').click();">
+              <div>
+                <div style="font-size: 28px; margin-bottom: 8px;">🧀</div>
+                <h3 class="info-card-title">Ингредиенты и продукты</h3>
+                <p class="info-card-sub">6 позиций в таблице · Сыры, мясо, рыба, мука, бакалея</p>
+              </div>
+              <div style="margin-top: 16px; font-weight: 600; color: #2F855A;">Перейти к списку позиций →</div>
+            </div>
+
+            <div class="info-card" style="cursor: pointer;" onclick="document.querySelector('[data-nav-target=warehouse]').click();">
+              <div>
+                <div style="font-size: 28px; margin-bottom: 8px;">🍕</div>
+                <h3 class="info-card-title">Полуфабрикаты собственного производства</h3>
+                <p class="info-card-sub">4 позиции в таблице · Заготовки кухни, соусы, паста, тесто</p>
+              </div>
+              <div style="margin-top: 16px; font-weight: 600; color: #2F855A;">Перейти к списку позиций →</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             РАЗДЕЛ: ЗАКАЗЫ
+             ================================================================== -->
+        <section class="view-section" id="section-orders" aria-label="Заказы">
+          <header class="top-header">
+            <div>
+              <h1 class="page-title">Заказы поставщикам</h1>
+              <p class="page-meta">История закупок, накладные и контроль поступлений</p>
+            </div>
+            <div class="header-actions">
+              <button type="button" class="btn-primary" onclick="document.getElementById('btn-create-order').click();">+ Создать заказ</button>
+            </div>
+          </header>
+
+          <div class="table-card">
+            <div class="table-scroll-container">
+              <table class="warehouse-table">
+                <thead>
+                  <tr>
+                    <th>Номер</th>
+                    <th>Поставщик</th>
+                    <th>Дата</th>
+                    <th style="text-align: center;">Позиций</th>
+                    <th style="text-align: right;">Сумма</th>
+                    <th style="text-align: center;">Статус</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                  <tr style="border-bottom: 1px solid #F0EFEA;">
+                    <td style="padding: 14px 16px; font-weight: 700;">№ 1042</td>
+                    <td style="padding: 14px 16px; font-weight: 600;">Тесоро</td>
+                    <td style="padding: 14px 16px; color: #8E9297;">10 окт. 2026, 11:30</td>
+                    <td style="padding: 14px 16px; text-align: center;">3</td>
+                    <td style="padding: 14px 16px; text-align: right; font-weight: 700;">48 900 ₽</td>
+                    <td style="padding: 14px 16px; text-align: center;"><span class="badge badge--warn">В пути</span></td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #F0EFEA;">
+                    <td style="padding: 14px 16px; font-weight: 700;">№ 1041</td>
+                    <td style="padding: 14px 16px; font-weight: 600;">Норд Фиш</td>
+                    <td style="padding: 14px 16px; color: #8E9297;">08 окт. 2026, 09:15</td>
+                    <td style="padding: 14px 16px; text-align: center;">2</td>
+                    <td style="padding: 14px 16px; text-align: right; font-weight: 700;">62 450 ₽</td>
+                    <td style="padding: 14px 16px; text-align: center;"><span class="badge badge--ok">Доставлено</span></td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #F0EFEA;">
+                    <td style="padding: 14px 16px; font-weight: 700;">№ 1040</td>
+                    <td style="padding: 14px 16px; font-weight: 600;">Мясной дом</td>
+                    <td style="padding: 14px 16px; color: #8E9297;">05 окт. 2026, 14:00</td>
+                    <td style="padding: 14px 16px; text-align: center;">4</td>
+                    <td style="padding: 14px 16px; text-align: right; font-weight: 700;">184 200 ₽</td>
+                    <td style="padding: 14px 16px; text-align: center;"><span class="badge badge--ok">Доставлено</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             РАЗДЕЛ: КЛИЕНТЫ
+             ================================================================== -->
+        <section class="view-section" id="section-clients" aria-label="Клиенты">
+          <header class="top-header">
+            <div>
+              <h1 class="page-title">Клиенты и гости</h1>
+              <p class="page-meta">Постоянные гости гастробара и программа лояльности</p>
+            </div>
+          </header>
+
+          <div class="cards-grid">
+            <div class="info-card">
+              <div>
+                <div class="info-card-header">
+                  <span class="badge badge--ok">VIP Gold</span>
+                  <span style="font-size: 11px; color: #8E9297;">18 визитов</span>
+                </div>
+                <h3 class="info-card-title">Алексей Миронов</h3>
+                <p class="info-card-sub">Любимые блюда: Стейк Рибай, Пицца со страчателлой</p>
+              </div>
+              <div style="margin-top: 14px; font-weight: 700;">Средний чек: 5 400 ₽</div>
+            </div>
+
+            <div class="info-card">
+              <div>
+                <div class="info-card-header">
+                  <span class="badge badge--ok">VIP Platinum</span>
+                  <span style="font-size: 11px; color: #8E9297;">25 визитов</span>
+                </div>
+                <h3 class="info-card-title">Дмитрий Смирнов</h3>
+                <p class="info-card-sub">Любимые блюда: Тальятелле с лососем, Фокачча</p>
+              </div>
+              <div style="margin-top: 14px; font-weight: 700;">Средний чек: 6 100 ₽</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             РАЗДЕЛ: ПОСТАВЩИКИ
+             ================================================================== -->
+        <section class="view-section" id="section-suppliers" aria-label="Поставщики">
+          <header class="top-header">
+            <div>
+              <h1 class="page-title">Поставщики гастробара</h1>
+              <p class="page-meta">Контакты, графики поставок и минимальные суммы заказа</p>
+            </div>
+          </header>
+
+          <div class="cards-grid">
+            <div class="info-card">
+              <div>
+                <div class="info-card-header">
+                  <span class="badge badge--danger">Требует заказ</span>
+                  <span style="font-size: 11px; color: #8E9297;">Сыры / Молочка</span>
+                </div>
+                <h3 class="info-card-title">Тесоро</h3>
+                <p class="info-card-sub" style="margin-top: 6px;">Тел: +7 (495) 820-11-22<br>Доставка: Вт, Чт, Сб (до 10:00)<br>Мин. сумма: 15 000 ₽</p>
+              </div>
+              <button type="button" class="btn-secondary" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="document.getElementById('supplier-filter').value='Тесоро'; document.querySelector('[data-nav-target=warehouse]').click();">Показать товары на складе</button>
+            </div>
+
+            <div class="info-card">
+              <div>
+                <div class="info-card-header">
+                  <span class="badge badge--danger">Требует заказ</span>
+                  <span style="font-size: 11px; color: #8E9297;">Рыба</span>
+                </div>
+                <h3 class="info-card-title">Норд Фиш</h3>
+                <p class="info-card-sub" style="margin-top: 6px;">Тел: +7 (495) 739-44-55<br>Доставка: Пн, Ср, Пт<br>Мин. сумма: 25 000 ₽</p>
+              </div>
+              <button type="button" class="btn-secondary" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="document.getElementById('supplier-filter').value='Норд Фиш'; document.querySelector('[data-nav-target=warehouse]').click();">Показать товары на складе</button>
+            </div>
+
+            <div class="info-card">
+              <div>
+                <div class="info-card-header">
+                  <span class="badge badge--ok">В норме</span>
+                  <span style="font-size: 11px; color: #8E9297;">Мясо</span>
+                </div>
+                <h3 class="info-card-title">Мясной дом</h3>
+                <p class="info-card-sub" style="margin-top: 6px;">Тел: +7 (495) 505-33-88<br>Доставка: Пн, Чт<br>Мин. сумма: 30 000 ₽</p>
+              </div>
+              <button type="button" class="btn-secondary" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="document.getElementById('supplier-filter').value='Мясной дом'; document.querySelector('[data-nav-target=warehouse]').click();">Показать товары на складе</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             РАЗДЕЛ: ОТЧЁТЫ
+             ================================================================== -->
+        <section class="view-section" id="section-reports" aria-label="Отчёты">
+          <header class="top-header">
+            <div>
+              <h1 class="page-title">Складские отчёты и аналитика</h1>
+              <p class="page-meta">Закупки за июнь и июль, динамика списаний и обороты</p>
+            </div>
+          </header>
+
+          <div class="kpi-grid">
+            <article class="kpi-card">
+              <span class="kpi-label">Закупки за июль</span>
+              <div class="kpi-value">1 148 700 ₽</div>
+              <span class="kpi-subtext text-success">+28,4% от месячной выручки</span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Списания за июль</span>
+              <div class="kpi-value">18 400 ₽</div>
+              <span class="kpi-subtext">1,6% от общей стоимости склада</span>
+            </article>
+
+            <article class="kpi-card">
+              <span class="kpi-label">Оборачиваемость склада</span>
+              <div class="kpi-value">8,2 дня</div>
+              <span class="kpi-subtext text-success">Оптимальный уровень запасов</span>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       МОДАЛЬНЫЕ ОКНА
+       ====================================================================== -->
+  <!-- Модалка: Создать заказ -->
+  <div class="modal-overlay" id="modal-order">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Формирование дозаказа</h2>
+          <div style="font-size: 11px; color: #8E9297;">Рекомендованный объём по позициям с низким запасом</div>
+        </div>
+        <button type="button" class="modal-close-btn" data-modal-close aria-label="Закрыть">✕</button>
+      </div>
+
+      <div class="modal-body" id="order-items-list">
+        <!-- Генерируется из script.js -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px;">
+        <span style="font-size: 13px; font-weight: 500; color: #5F6368;">Итого к заказу:</span>
+        <span style="font-size: 17px; font-weight: 700;" class="tabular-nums" id="order-total-sum">0 ₽</span>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn-primary" id="btn-confirm-order">Подтвердить и отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Экспорт -->
+  <div class="modal-overlay" id="modal-export">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Экспорт ведомости остатков</h2>
+        <button type="button" class="modal-close-btn" data-modal-close aria-label="Закрыть">✕</button>
+      </div>
+
+      <p style="font-size: 12.5px; color: #5F6368; line-height: 1.4;">
+        Выгрузка актуальных данных склада (42 позиции) в файл CSV (UTF-8 с BOM), готовый для открытия в Excel и 1С.
+      </p>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-copy-export">Скопировать</button>
+        <button type="button" class="btn-primary" id="btn-download-csv">Скачать CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Инвентаризация -->
+  <div class="modal-overlay" id="modal-inventory">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Мастер инвентаризации</h2>
+        <button type="button" class="modal-close-btn" data-modal-close aria-label="Закрыть">✕</button>
+      </div>
+
+      <p style="font-size: 12.5px; color: #5F6368; line-height: 1.4;">
+        Контрольная сверка фактических остатков по ячейкам склада. Дата плановой инвентаризации: сегодня.
+      </p>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-modal-close>Закрыть</button>
+        <button type="button" class="btn-primary" id="btn-finish-inventory">Завершить сверку</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Списание позиции -->
+  <div class="modal-overlay" id="modal-writeoff">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" style="color: var(--color-danger);">Списание позиции</h2>
+        <button type="button" class="modal-close-btn" data-modal-close aria-label="Закрыть">✕</button>
+      </div>
+
+      <div style="font-size: 12px; color: #5F6368;" id="writeoff-item-name">Товар</div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">
+            Количество к списанию<span id="writeoff-unit-label"></span>:
+          </label>
+          <input type="number" step="0.1" min="0.1" id="writeoff-amount-input" class="search-input" style="width: 100%;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">
+            Причина списания:
+          </label>
+          <select id="writeoff-reason-select" class="filter-select" style="width: 100%;">
+            <option value="Истечение срока годности">Истечение срока годности</option>
+            <option value="Брак / бой тары">Брак / бой тары</option>
+            <option value="Проработка блюд кухни">Проработка блюд кухни</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-modal-close>Отмена</button>
+        <button type="button" class="btn-primary" id="btn-confirm-writeoff" style="background-color: var(--color-danger);">Подтвердить списание</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: Техкарта блюда (Recipe Modal) -->
+  <div class="modal-overlay" id="modal-recipe">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="recipe-modal-title">Технологическая карта</h2>
+          <div style="font-size: 12px; color: #5F6368;" id="recipe-modal-subtitle">Раскладка ингредиентов и себестоимость</div>
+        </div>
+        <button type="button" class="modal-close-btn" data-modal-close aria-label="Закрыть">✕</button>
+      </div>
+
+      <div class="recipe-summary-grid">
+        <div class="recipe-metric-box">
+          <div class="recipe-metric-label">Себестоимость</div>
+          <div class="recipe-metric-val" id="recipe-modal-cost">215 ₽</div>
+        </div>
+        <div class="recipe-metric-box">
+          <div class="recipe-metric-label">Цена в меню</div>
+          <div class="recipe-metric-val" id="recipe-modal-price">790 ₽</div>
+        </div>
+        <div class="recipe-metric-box">
+          <div class="recipe-metric-label">Маржинальность</div>
+          <div class="recipe-metric-val text-success" id="recipe-modal-margin">72.8%</div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 16px;">
+        <table class="recipe-ingredients-table">
+          <thead>
+            <tr>
+              <th>Ингредиент</th>
+              <th>Брутто</th>
+              <th style="text-align: right;">Сумма</th>
+              <th style="text-align: right;">Остаток</th>
+            </tr>
+          </thead>
+          <tbody id="recipe-modal-ingredients-body">
+            <!-- Заполняется динамически через script.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-modal-close>Закрыть</button>
+        <button type="button" class="btn-primary" onclick="alert('Техкарта отправлена на печать на принтер кухни (Никольская)');">Печать техкарты</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
